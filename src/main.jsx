@@ -15,11 +15,10 @@ import Layout from './Layout.jsx';
 import HomePage from './pages/HomePage.jsx';
 import RoleSelectPage from './pages/RoleSelectPage.jsx';
 import SignUpPage from './pages/SignUpPage.jsx';
-import LoginPage from './pages/LoginPage.jsx'; // Make sure this is imported
+import LoginPage from './pages/Login.jsx';
 
 import CourseUploadPage from './pages/CourseUploadPage.jsx';
 import CourseDetailsPage from './pages/CourseDetailsPage.jsx';
-
 
 // Dummy components for other routes
 const CoursesPage = () => <div className="h-96 flex items-center justify-center text-3xl">Courses Page</div>;
@@ -36,17 +35,17 @@ const router = createBrowserRouter([
         element: <HomePage />,
       },
       {
-    path: "/role-select",
-    element: <RoleSelectPage />,
-  },
-  {
-    path: "/login/:role", // Dynamic route for parent/children
-    element: <LoginPage />,
-  },
-  {
-    path: "/signup/:role", // Dynamic route for parent/children
-    element: <SignUpPage />,
-  },
+        path: "role-select",
+        element: <RoleSelectPage />,
+      },
+      {
+        path: "login/:role", // Dynamic route for parent/children
+        element: <LoginPage />,
+      },
+      {
+        path: "signup/:role", // Dynamic route for parent/children
+        element: <SignUpPage />,
+      },
       {
         path: "courses",
         element: <CoursesPage />,
@@ -58,13 +57,13 @@ const router = createBrowserRouter([
       {
         path: "contact",
         element: <ContactPage />,
-      }, 
+      },  
       {
         path: "upload-course", // নতুন রাউট
         element: <CourseUploadPage />,
       },
       {
-        path: "courses/:courseId", // নতুন ডায়নামিক রাউট
+        path: "courses/:courseId", // নতুন ডায়নামিক রাউট
         element: <CourseDetailsPage />,
       },
     ],
