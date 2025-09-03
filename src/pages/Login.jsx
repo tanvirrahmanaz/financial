@@ -29,8 +29,10 @@ const LoginPage = () => {
             });
             const data = await response.json();
             if (response.ok) {
-                login(data);
-                navigate('/dashboard');
+                // Here, we check if the user is the admin to set the correct role
+                const userRole = data.user.email === 'admin@gmail.com' ? 'admin' : data.user.role;
+                login({ ...data, user: { ...data.user, role: userRole } });
+                navigate('/dashboard'); // Or navigate to a specific admin dashboard
             } else {
                 setError(data.message || 'Login failed.');
             }
@@ -64,9 +66,10 @@ const LoginPage = () => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-            {/* Navbar is not included here */}
             <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 capitalize">{role} Login</h2>
+                <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 capitalize">
+                    {role === 'admin' ? 'Admin' : role} Login
+                </h2>
                 {error && <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4 text-sm">{error}</div>}
                 <form onSubmit={handleManualLogin}>
                     <div className="mb-4">
@@ -91,10 +94,18 @@ const LoginPage = () => {
                 )}
                 
                 <div className="mt-6 text-center text-sm">
-                    Don't have an account?{' '}
-                    <Link to={`/signup/${role}`} className="text-blue-600 hover:underline">
-                        Sign up here
-                    </Link>
+                    {role === 'admin' ? (
+                      <Link to="/role-select" className="text-blue-600 hover:underline">
+                        Go back to parent/child login
+                      </Link>
+                    ) : (
+                      <>
+                        Don't have an account?{' '}
+                        <Link to={`/signup/${role}`} className="text-blue-600 hover:underline">
+                          Sign up here
+                        </Link>
+                      </>
+                    )}
                 </div>
             </div>
         </div>

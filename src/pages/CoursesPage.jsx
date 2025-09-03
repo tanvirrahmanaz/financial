@@ -26,26 +26,27 @@ const CoursesPage = () => {
     fetchCourses();
   }, []);
 
-  if (loading) return <div className="text-center mt-10">Loading...</div>;
-  if (error) return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
+  if (loading) return <div className="text-center mt-10 text-lg font-semibold">Loading courses...</div>;
+  if (error) return <div className="text-center mt-10 text-red-500 text-lg font-semibold">Error: {error}</div>;
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold text-center mb-8">Available Courses</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="container mx-auto p-8">
+      <h1 className="text-4xl font-bold text-center mb-10 text-dark-brown">Available Courses</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {courses.length > 0 ? (
           courses.map(course => (
             <Link to={`/courses/${course._id}`} key={course._id} className="block">
-              <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+              <div className="bg-white rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-2 transition-transform duration-300">
                 <div className="p-6">
-                  <h2 className="text-xl font-semibold mb-2">{course.title}</h2>
-                  <p className="text-gray-600">{course.description}</p>
+                  <h2 className="text-2xl font-bold mb-2 text-dark-brown">{course.title}</h2>
+                  <p className="text-gray-600 mb-4">{course.description}</p>
+                  <span className="text-sm font-semibold text-soft-yellow">View Course →</span>
                 </div>
               </div>
             </Link>
           ))
         ) : (
-          <p className="col-span-full text-center text-gray-500">No courses available yet.</p>
+          <p className="col-span-full text-center text-gray-500 text-lg">No courses available yet. Please check back later!</p>
         )}
       </div>
     </div>

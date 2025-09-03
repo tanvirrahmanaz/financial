@@ -37,12 +37,28 @@ const Navbar = () => {
           {/* ## Only show for parents ## */}
           {appUser && appUser.role === 'parent' && (
             <li>
-              <Link to="/upload-course" className="bg-soft-yellow px-4 py-2 rounded-full hover:bg-amber-400 transition-colors">
+              <Link to="/upload-course" className="hover:text-dark-brown transition-colors">
                 Upload Course
               </Link>
             </li>
           )}
           
+          {/* ## Only show for the specific admin user ## */}
+          {appUser && appUser.email === 'admin@gmail.com' && (
+            <li>
+              <Link to="/admin-panel" className="bg-soft-yellow px-4 py-2 rounded-full hover:bg-amber-400 transition-colors">
+                Admin Panel
+              </Link>
+            </li>
+          )}
+
+          {/* NEW: Direct Admin Demo Link (Zero Security) */}
+          <li>
+            <Link to="/admin-panel" className="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors">
+              Admin Demo
+            </Link>
+          </li>
+
           <li><Link to="/about" className="hover:text-dark-brown transition-colors">About Us</Link></li>
         </ul>
 
@@ -74,11 +90,11 @@ const Navbar = () => {
             </div>
           ) : (
             <>
-              {/* Updated links to direct to the role selection page */}
+              {/* Login and Signup links */}
               <Link to="/role-select" className="px-5 py-2 text-sm font-medium rounded-full border border-dark-brown/50 hover:bg-dark-brown/5 transition-colors">
                 Log In
               </Link>
-              <Link to="/role-select" className="px-5 py-2 text-sm font-medium rounded-full border border-dark-brown/50 hover:bg-dark-brown/5 transition-colors">
+              <Link to="/role-select" className="px-5 py-2 text-sm font-medium text-white bg-dark-brown rounded-full hover:opacity-90 transition-opacity">
                 Sign Up
               </Link>
             </>

@@ -17,11 +17,12 @@ import RoleSelectPage from './pages/RoleSelectPage.jsx';
 import SignUpPage from './pages/SignUpPage.jsx';
 import LoginPage from './pages/Login.jsx';
 
+import CoursesPage from './pages/CoursesPage.jsx';
 import CourseUploadPage from './pages/CourseUploadPage.jsx';
 import CourseDetailsPage from './pages/CourseDetailsPage.jsx';
+import AdminPanel from './pages/AdminPanel.jsx';
 
 // Dummy components for other routes
-const CoursesPage = () => <div className="h-96 flex items-center justify-center text-3xl">Courses Page</div>;
 const AboutPage = () => <div className="h-96 flex items-center justify-center text-3xl">About Us Page</div>;
 const ContactPage = () => <div className="h-96 flex items-center justify-center text-3xl">Contact Page</div>;
 
@@ -39,11 +40,11 @@ const router = createBrowserRouter([
         element: <RoleSelectPage />,
       },
       {
-        path: "login/:role", // Dynamic route for parent/children
+        path: "login/:role",
         element: <LoginPage />,
       },
       {
-        path: "signup/:role", // Dynamic route for parent/children
+        path: "signup/:role",
         element: <SignUpPage />,
       },
       {
@@ -59,20 +60,23 @@ const router = createBrowserRouter([
         element: <ContactPage />,
       },  
       {
-        path: "upload-course", // নতুন রাউট
+        path: "upload-course", 
         element: <CourseUploadPage />,
       },
       {
-        path: "courses/:courseId", // নতুন ডায়নামিক রাউট
+        path: "courses/:courseId", 
         element: <CourseDetailsPage />,
       },
+      {
+        path: 'admin-panel',
+        element: <AdminPanel />
+      }
     ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    {/* Wrap the entire app with AuthProvider */}
     <AuthProvider>
       <RouterProvider router={router} />
     </AuthProvider>
