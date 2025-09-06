@@ -1,26 +1,41 @@
+// src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, googleProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from '../firebase/firebase.config';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+    const [user, setUser] = useState(null);
+    const [token, setToken] = useState(null);
 
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(setCurrentUser);
-    return unsubscribe;
-  }, []);
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+        if (storedUser && storedToken) {
+            setUser(JSON.parse(storedUser));
+            setToken(storedToken);
+        }
+    }, []);
 
-  const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
-  const googleLogin = () => signInWithPopup(auth, googleProvider);
-  const register = (email, password) => createUserWithEmailAndPassword(auth, email, password);
+    const login = (data) => {
+        const { token, user } = data;
+        setUser(user);
+        setToken(token);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', token);
+    };
 
-  return (
-    <AuthContext.Provider value={{ currentUser, login, googleLogin, register }}>
-      {children}
-    </AuthContext.Provider>
-  );
+    const logout = () => {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+    };
+
+    return (
+        <AuthContext.Provider value={{ user, token, login, logout }}>
+            {children}
+        </AuthContext.Provider>
+    );
 };
-// 

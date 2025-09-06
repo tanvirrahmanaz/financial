@@ -1,37 +1,33 @@
 // src/components/Hero.jsx
-import React from 'react';
+import { Link } from "react-router-dom";
 
-const Hero = () => {
+export default function Hero() {
   return (
-    <section className="text-center py-16 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <h2 className="text-2xl font-semibold tracking-widest text-dark-brown/80 mb-6">LEARN</h2>
-        
-        <div className="flex justify-center items-center gap-8 md:gap-12 mb-10">
-          <h1 className="text-4xl md:text-6xl font-bold">How</h1>
-          {/* Replace with your actual image URL */}
-          <img 
-            src="https://i.ibb.co/L5k6Y1w/hero-kids-image.png" 
-            alt="Kids learning about money" 
-            className="w-40 h-40 md:w-56 md:h-56 object-cover rounded-full shadow-subtle"
-          />
-          <h1 className="text-4xl md:text-6xl font-bold">To</h1>
+    <section className="bg-gradient-to-b from-indigo-50 to-transparent">
+      <div className="max-w-6xl mx-auto px-4 py-16 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-4">
+            Fun learning for <span className="text-indigo-600">kids</span>,
+            clear insights for <span className="text-indigo-600">parents</span>.
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Watch lessons, take quizzes, and track progress—all in one simple platform.
+          </p>
+          <div className="flex gap-3">
+            <Link to="/signup" className="px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">Get Started</Link>
+            <a href="#courses" className="px-5 py-3 rounded-xl border hover:bg-white">Browse Courses</a>
+          </div>
         </div>
-        
-        <div className="flex flex-col md:flex-row justify-center items-center gap-6">
-          <button className="w-full md:w-auto text-2xl font-bold bg-soft-blue text-dark-brown px-16 py-4 rounded-2xl shadow-subtle hover:scale-105 transition-transform">
-            Earn
-          </button>
-          <button className="w-full md:w-auto text-2xl font-bold bg-soft-yellow text-dark-brown px-16 py-4 rounded-2xl shadow-subtle hover:scale-105 transition-transform">
-            Save
-          </button>
-          <button className="w-full md:w-auto text-2xl font-bold bg-soft-pink text-dark-brown px-16 py-4 rounded-2xl shadow-subtle hover:scale-105 transition-transform">
-            Invest
-          </button>
+        <div className="relative">
+          <div className="aspect-video w-full rounded-2xl bg-black/5 border overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1601933470928-c1b9a9f1a0c5?q=80&w=1200&auto=format&fit=crop" alt="Learning" className="w-full h-full object-cover" />
+          </div>
+          <div className="absolute -bottom-6 -right-6 bg-white border shadow rounded-2xl p-4 w-64">
+            <p className="text-sm text-gray-500">This week</p>
+            <p className="text-2xl font-bold">+42% progress</p>
+          </div>
         </div>
       </div>
     </section>
   );
-};
-
-export default Hero;
+}

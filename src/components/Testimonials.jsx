@@ -1,37 +1,24 @@
 // src/components/Testimonials.jsx
-import React from 'react';
+import { testimonials } from "../data/testimonials.js";
 
-const TestimonialCard = ({ quote, author, borderColor, bgColor }) => (
-  <div className={`p-6 rounded-lg ${bgColor} border-l-4 ${borderColor} max-w-2xl mx-auto shadow-subtle`}>
-    <p className="italic text-gray-700 mb-4">"{quote}"</p>
-    <p className="text-right font-semibold text-dark-brown">- {author}</p>
-  </div>
-);
-
-const Testimonials = () => {
+export default function Testimonials() {
   return (
-    <section className="py-20 px-4">
-      <div className="container mx-auto max-w-4xl">
-        <h2 className="text-2xl font-semibold tracking-widest text-dark-brown/80 mb-12 text-center">
-          TESTIMONIALS
-        </h2>
-        <div className="space-y-8">
-          <TestimonialCard
-            quote="I never knew learning about money could be so fun! This app taught me how to save, spend wisely, and even plan for the future. Now, I feel more confident about managing my own money!"
-            author="Aisha, 13"
-            borderColor="border-blue-300"
-            bgColor="bg-blue-50/50"
-          />
-          <TestimonialCard
-            quote="Teaching kids about finances has always been a challenge, but this app makes it so easy and engaging. My child now understands the value of money and the importance of saving. Highly recommended!"
-            author="Mrs. Rahman, Parent"
-            borderColor="border-pink-300"
-            bgColor="bg-pink-50/50"
-          />
-        </div>
+    <section id="testimonials" className="py-16">
+      <h2 className="text-2xl md:text-3xl font-bold mb-8">What parents say</h2>
+      <div className="grid md:grid-cols-3 gap-6">
+        {testimonials.map((t) => (
+          <div key={t.id} className="rounded-2xl border bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-3">
+              <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
+              <div>
+                <p className="font-semibold">{t.name}</p>
+                <p className="text-sm text-gray-500">{t.role}</p>
+              </div>
+            </div>
+            <p className="text-gray-700">“{t.quote}”</p>
+          </div>
+        ))}
       </div>
     </section>
   );
-};
-
-export default Testimonials;
+}

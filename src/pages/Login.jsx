@@ -1,115 +1,110 @@
-// src/pages/Login.jsx
-import React, { useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { signInWithGoogle } from '../firebase/firebase.config';
+// src/pages/Login.jsx  (CLIENT — navigate based on profileComplete + return to `from`)
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { auth, signInWithEmailAndPassword, signInWithGoogle } from "../firebase/firebase.config.js";
 
-const LoginPage = () => {
-    const { role } = useParams();
-    const navigate = useNavigate();
-    const { login } = useAuth();
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
-    const [error, setError] = useState('');
+const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
+async function routeAfterLogin(navigate, email, fromPath) {
+  try {
+    const res = await fetch(`${API}/api/users/me?email=${encodeURIComponent(email)}`);
+    const data = await res.json();
 
-    const handleManualLogin = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            const response = await fetch('http://localhost:5000/api/users/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-            const data = await response.json();
-            if (response.ok) {
-                // Here, we check if the user is the admin to set the correct role
-                const userRole = data.user.email === 'admin@gmail.com' ? 'admin' : data.user.role;
-                login({ ...data, user: { ...data.user, role: userRole } });
-                navigate('/dashboard'); // Or navigate to a specific admin dashboard
-            } else {
-                setError(data.message || 'Login failed.');
-            }
-        } catch (err) {
-            setError('A network error occurred. Please try again.');
-        }
-    };
+    const backTo = fromPath || "/";
 
-    const handleGoogleLogin = async () => {
-        setError('');
-        const googleUser = await signInWithGoogle();
-        if (googleUser) {
-            try {
-                const response = await fetch('http://localhost:5000/api/users/google-login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: googleUser.email }),
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    login(data);
-                    navigate('/dashboard');
-                } else {
-                    setError(data.message || 'Google login failed.');
-                }
-            } catch (err) {
-                setError('A network error occurred.');
-            }
-        }
-    };
+    if (res.ok && data.user?.profileComplete) {
+      navigate(backTo);
+    } else {
+      // send to complete profile but remember where to go back
+      navigate("/complete-profile", { state: { from: backTo } });
+    }
+  } catch {
+    navigate("/complete-profile", { state: { from: fromPath || "/" } });
+  }
+}
 
-    return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-            <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold text-center mb-6 text-gray-800 capitalize">
-                    {role === 'admin' ? 'Admin' : role} Login
-                </h2>
-                {error && <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4 text-sm">{error}</div>}
-                <form onSubmit={handleManualLogin}>
-                    <div className="mb-4">
-                        <label className="block text-gray-700">Email</label>
-                        <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full mt-1 p-2 border rounded-md" required />
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700">Password</label>
-                        <input type="password" name="password" value={formData.password} onChange={handleChange} className="w-full mt-1 p-2 border rounded-md" required />
-                    </div>
-                    <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300">
-                        Login
-                    </button>
-                </form>
-                {role === 'children' && (
-                    <div className="mt-4 text-center">
-                        <p className="text-gray-500">Or log in with Google</p>
-                        <button onClick={handleGoogleLogin} className="w-full mt-2 bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition duration-300">
-                            <i className="fab fa-google mr-2"></i> Sign In with Google
-                        </button>
-                    </div>
-                )}
-                
-                <div className="mt-6 text-center text-sm">
-                    {role === 'admin' ? (
-                      <Link to="/role-select" className="text-blue-600 hover:underline">
-                        Go back to parent/child login
-                      </Link>
-                    ) : (
-                      <>
-                        Don't have an account?{' '}
-                        <Link to={`/signup/${role}`} className="text-blue-600 hover:underline">
-                          Sign up here
-                        </Link>
-                      </>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || null;
 
-export default LoginPage;
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      await routeAfterLogin(navigate, cred.user.email, from);
+    } catch (err) {
+      setError(err.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const user = await signInWithGoogle();
+      if (!user) throw new Error("Google sign-in failed");
+      await routeAfterLogin(navigate, user.email, from);
+    } catch (err) {
+      setError(err.message || "Google sign-in failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <section className="py-14">
+      <div className="max-w-md mx-auto bg-white border rounded-2xl shadow p-6">
+        <h1 className="text-2xl font-bold mb-1">Welcome back</h1>
+        <p className="text-gray-600 mb-6">Log in to continue</p>
+        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-1">Email</label>
+            <input
+              value={email}
+              onChange={(e)=>setEmail(e.target.value)}
+              type="email"
+              className="w-full border rounded-xl px-3 py-2"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Password</label>
+            <input
+              value={password}
+              onChange={(e)=>setPassword(e.target.value)}
+              type="password"
+              className="w-full border rounded-xl px-3 py-2"
+              required
+            />
+          </div>
+          <button
+            disabled={loading}
+            className="w-full px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+          >
+            {loading ? "Logging in..." : "Log in"}
+          </button>
+        </form>
+        <button
+          onClick={handleGoogle}
+          disabled={loading}
+          className="mt-4 w-full px-4 py-2 rounded-xl border hover:bg-gray-50 disabled:opacity-60"
+        >
+          Continue with Google
+        </button>
+        <p className="text-sm text-gray-600 mt-4">
+          No account? <Link to="/signup" className="text-indigo-600">Sign up</Link>
+        </p>
+      </div>
+    </section>
+  );
+}
