@@ -1,6 +1,7 @@
 // client/src/pages/ChildrenSignup.jsx
 import React, { useState } from 'react';
 import { signInWithGoogle } from '../firebase/firebase.config';
+const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 import { useNavigate } from 'react-router-dom';
 
 const ChildrenSignup = () => {
@@ -22,7 +23,7 @@ const ChildrenSignup = () => {
 
   const handleManualSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:5000/api/auth/children-signup', {
+    const response = await fetch(`${API}/api/auth/children-signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData),

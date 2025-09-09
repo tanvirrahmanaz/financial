@@ -48,7 +48,7 @@ export default function EnrollButton({ courseId, className = "" }) {
       disabled={authLoading || checking}
       className={
         className ||
-        "mt-4 ml-auto px-3 py-2 rounded-xl bg-indigo-600 text-white disabled:opacity-60"
+        "mt-4 ml-auto px-4 py-2 rounded-full text-gray-800 btn-fun disabled:opacity-60"
       }
     >
       {authLoading || checking ? "Please wait…" : "Enroll / Start"}

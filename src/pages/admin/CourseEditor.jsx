@@ -1,6 +1,6 @@
 // src/pages/admin/CourseEditor.jsx
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { auth } from "../../firebase/firebase.config.js";
 
 const API = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
@@ -40,34 +40,36 @@ const emptyLesson = () => ({
 });
 
 export default function CourseEditor() {
+  const { id } = useParams();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [thumbnail, setThumbnail] = useState("");
   const [lessons, setLessons] = useState([emptyLesson()]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Load course data in edit mode
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const current = auth.currentUser;
+        if (!current?.email) return; // will redirect on submit if needed
+        const r = await fetch(`${API}/api/admin/courses/${id}`, { headers: { 'x-user-email': current.email }});
+        const d = await r.json();
+        if (r.ok && d.course) {
+          setTitle(d.course.title || "");
+          setDescription(d.course.description || "");
+          setThumbnail(d.course.thumbnail || "");
+          setLessons(Array.isArray(d.course.lessons) && d.course.lessons.length ? d.course.lessons : [emptyLesson()]);
+        }
+      } catch (_) {}
+    };
+    if (id) load();
+  }, [id]);
+
   const addLesson = () => setLessons((prev) => [...prev, emptyLesson()]);
   const removeLesson = (i) => setLessons((prev) => prev.filter((_, idx) => idx !== i));
-
-
-  useEffect(()=>{
-    const unsub = auth.onAuthStateChanged(async(u)=>{
-      setUser(u);
-      if(u){
-        try{
-          const res = await fetch(`${API}/api/users/me?email=${encodeURIComponent(u.email)}`);
-          const d = await res.json();
-          setProfileComplete(!!d?.user?.profileComplete);
-        }catch(_){ setProfileComplete(false); }
-      } else {
-        setProfileComplete(false);
-      }
-    });
-    return ()=>unsub();
-  },[]);
-
- 
   const updateLessonField = (i, key, value) => {
     setLessons((prev) => {
       const next = [...prev];
@@ -145,40 +147,14 @@ export default function CourseEditor() {
       return;
     }
 
-    // 1) ensure profile is complete before allowing course create
-    const meRes = await fetch(`${API}/api/users/me?email=${encodeURIComponent(current.email)}`);
-    const meData = await meRes.json();
-    if (!meRes.ok) throw new Error(meData.message || "Failed to fetch user");
-    if (!meData?.user?.profileComplete) {
-      navigate("/complete-profile");
-      return;
-    }
-
-    // 2) helper: extract YouTube videoId from URL or accept raw id
-    const extract = (input = "") => {
-      if (!input) return "";
-      if (/^[\w-]{11}$/.test(input)) return input;
-      try {
-        const url = new URL(input);
-        if (url.hostname.includes("youtube.com")) {
-          const v = url.searchParams.get("v");
-          if (v) return v;
-        }
-        if (url.hostname.includes("youtu.be")) {
-          return url.pathname.replace("/", "");
-        }
-      } catch (_) { /* not a URL */ }
-      return input;
-    };
-
-    // 3) validate & normalize payload
+    // 1) validate & normalize payload
     if (!title.trim()) throw new Error("Course title is required");
 
     const normalizedLessons = lessons.map((ls, li) => {
       const t = String(ls.title || "").trim();
       if (!t) throw new Error(`Lesson ${li + 1}: title is required`);
 
-      const youtubeId = extract(String(ls.youtubeId || "").trim());
+      const youtubeId = extractYouTubeId(String(ls.youtubeId || "").trim());
       if (!youtubeId || youtubeId.length < 5) {
         throw new Error(`Lesson ${li + 1}: valid YouTube ID/URL required`);
       }
@@ -212,12 +188,15 @@ export default function CourseEditor() {
     const payload = {
       title: title.trim(),
       description: String(description || "").trim(),
+      thumbnail: String(thumbnail || "").trim() || undefined,
       lessons: normalizedLessons,
     };
 
-    // 4) create course (admin-gated by server via x-user-email)
-    const res = await fetch(`${API}/api/admin/courses`, {
-      method: "POST",
+    // 2) create or update course (admin-gated by server via x-user-email)
+    const url = id ? `${API}/api/admin/courses/${id}` : `${API}/api/admin/courses`;
+    const method = id ? 'PUT' : 'POST';
+    const res = await fetch(url, {
+      method,
       headers: {
         "Content-Type": "application/json",
         "x-user-email": current.email,
@@ -229,7 +208,7 @@ export default function CourseEditor() {
       throw new Error(data.message || "Failed to save course");
     }
 
-    navigate("/admin");
+    navigate(id ? `/admin/courses/${id}` : "/admin");
   } catch (err) {
     setError(err.message || "Something went wrong");
   } finally {
@@ -239,7 +218,7 @@ export default function CourseEditor() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold mb-1">Create Course</h1>
+      <h1 className="text-2xl font-bold mb-1">{id ? 'Edit Course' : 'Create Course'}</h1>
       <p className="text-gray-600 mb-6">
         Add single-video lessons. Each lesson must include <span className="font-medium">exactly 5 questions</span> (A–D options).
       </p>
@@ -258,6 +237,15 @@ export default function CourseEditor() {
                 className="w-full border rounded-xl px-3 py-2"
                 placeholder="e.g. Basic Math"
                 required
+              />
+            </div>
+            <div>
+              <label className="block text-sm mb-1">Thumbnail URL (optional)</label>
+              <input
+                value={thumbnail}
+                onChange={(e) => setThumbnail(e.target.value)}
+                className="w-full border rounded-xl px-3 py-2"
+                placeholder="https://.../image.jpg"
               />
             </div>
             <div className="md:col-span-2">
@@ -398,7 +386,7 @@ export default function CourseEditor() {
           disabled={loading}
           className="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
         >
-          {loading ? "Saving..." : "Save course"}
+          {loading ? (id ? 'Updating...' : 'Saving...') : (id ? 'Update course' : 'Save course')}
         </button>
       </form>
     </div>

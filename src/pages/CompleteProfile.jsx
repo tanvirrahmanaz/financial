@@ -18,6 +18,7 @@ export default function CompleteProfile() {
   const [school, setSchool] = useState("");
   const [checking, setChecking] = useState(false);
   const [isFree, setIsFree] = useState(null);
+  const [childCheck, setChildCheck] = useState({ status: 'idle', name: null });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [prefetching, setPrefetching] = useState(true);
@@ -52,6 +53,7 @@ export default function CompleteProfile() {
   }, [navigate]);
 
   const debounceRef = useMemo(() => ({ t: null }), []);
+  const debounceChildRef = useMemo(() => ({ t: null }), []);
   const checkUsername = (name) => {
     clearTimeout(debounceRef.t);
     setChecking(true);
@@ -68,6 +70,26 @@ export default function CompleteProfile() {
     setUsername(v);
     if (v.length >= 3) checkUsername(v);
     else setIsFree(null);
+  };
+
+  const onChildUsernameChange = (e) => {
+    const v = e.target.value.trim();
+    setChildUsername(v);
+    clearTimeout(debounceChildRef.t);
+    if (v.length < 3) { setChildCheck({ status: 'idle', name: null }); return; }
+    setChildCheck({ status: 'checking', name: null });
+    debounceChildRef.t = setTimeout(async () => {
+      try {
+        const res = await fetch(`${API}/api/users/check-child?username=${encodeURIComponent(v)}`);
+        const data = await res.json();
+        if (data.exists !== true) return setChildCheck({ status: 'notfound', name: null });
+        if (data.isChild !== true) return setChildCheck({ status: 'notchild', name: data.name || null });
+        if (data.linkedToParent) return setChildCheck({ status: 'linked', name: data.name || null });
+        setChildCheck({ status: 'ok', name: data.name || null });
+      } catch {
+        setChildCheck({ status: 'idle', name: null });
+      }
+    }, 350);
   };
 
   const onSubmit = async (e) => {
@@ -154,8 +176,23 @@ export default function CompleteProfile() {
                 <input value={address} onChange={(e)=>setAddress(e.target.value)} type="text" className="w-full border rounded-xl px-3 py-2" placeholder="Street, City" />
               </div>
               <div className="md:col-span-2">
-                <label className="block text-sm mb-1">Child's username (optional)</label>
-                <input value={childUsername} onChange={(e)=>setChildUsername(e.target.value.trim())} type="text" className="w-full border rounded-xl px-3 py-2" placeholder="e.g. rayhan_kid" />
+                <label className="block text-sm mb-1">Child's username (required)</label>
+                <input
+                  value={childUsername}
+                  onChange={onChildUsernameChange}
+                  type="text"
+                  className="w-full border rounded-xl px-3 py-2"
+                  placeholder="e.g. rayhan_kid"
+                  required
+                />
+                <p className={`text-xs mt-1 ${childCheck.status==='notfound' || childCheck.status==='notchild' || childCheck.status==='linked' ? 'text-red-600':'text-gray-500'}`}>
+                  {childCheck.status==='checking' && 'Checking child username...'}
+                  {childCheck.status==='ok' && `Found child${childCheck.name?`: ${childCheck.name}`:''}`}
+                  {childCheck.status==='notfound' && 'No user found with this username'}
+                  {childCheck.status==='notchild' && 'This username is not a child account'}
+                  {childCheck.status==='linked' && 'This child is already linked to another parent'}
+                  {childCheck.status==='idle' && 'Enter existing child username to link accounts'}
+                </p>
               </div>
             </>
           )}
@@ -172,7 +209,16 @@ export default function CompleteProfile() {
             </>
           )}
           <div className="md:col-span-2">
-            <button disabled={loading || isFree===false} className="w-full px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60">
+            <button disabled={
+              loading || isFree===false ||
+              (role === 'PARENT' && (
+                !childUsername || childUsername.length < 3 ||
+                childCheck.status === 'checking' ||
+                childCheck.status === 'notfound' ||
+                childCheck.status === 'notchild' ||
+                childCheck.status === 'linked'
+              ))
+            } className="w-full px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60">
               {loading?"Saving...":"Save & Continue"}
             </button>
           </div>

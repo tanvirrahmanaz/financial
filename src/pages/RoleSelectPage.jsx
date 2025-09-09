@@ -29,7 +29,7 @@ const RoleSelectPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-amber-50 p-4">
       {/* Logo */}
       <div className="absolute top-6 left-6 text-left">
-        <h1 className="text-lg font-bold text-dark-brown">The Little Savers</h1>
+        <h1 className="text-lg font-bold text-dark-brown">Chotto Shonchoyi</h1>
         <p className="text-xs text-gray-500 -mt-1">Financial Literacy</p>
       </div>
       

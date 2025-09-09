@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+/* Kids theme: rounded, cheerful palette, friendly fonts */
+:root {
+  --kids-rose: #ffb3c1;
+  --kids-amber: #ffd166;
+  --kids-mint: #8be9c1;
+  --kids-sky: #90cdf4;
+  --kids-grape: #c3b5ff;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.font-kids {
+  font-family: "Fredoka", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Soft card look */
+.card-soft {
+  background: white;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+}
+
+/* Fun gradient button */
+.btn-fun {
+  background-image: linear-gradient(135deg, var(--kids-rose), var(--kids-amber));
+  color: #1f2937;
+}
+.btn-fun:hover { filter: brightness(1.05); }
+
+/* App pastel gradient background helper */
+.bg-kids {
+  background-image: linear-gradient(to bottom, #f0f9ff, #fff7ed, #fff0f6);
+}

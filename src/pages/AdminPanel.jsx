@@ -1,6 +1,7 @@
 // src/pages/AdminPanel.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const AdminPanel = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/upload-course', {
+      const response = await fetch(`${API}/api/admin/upload-course`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

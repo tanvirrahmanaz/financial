@@ -7,7 +7,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword // Added this for completeness if you need it later
+  signInWithEmailAndPassword,
+  setPersistence,
+  browserLocalPersistence
 } from "firebase/auth";
 
 const firebaseConfig = {
@@ -21,7 +23,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+// Keep sessions between page reloads
+setPersistence(auth, browserLocalPersistence).catch(()=>{});
 const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 // Custom function for children's Google Sign-in
 const signInWithGoogle = async () => {
@@ -30,7 +35,7 @@ const signInWithGoogle = async () => {
     return result.user; // Return the user object
   } catch (error) {
     console.error("Error signing in with Google: ", error);
-    return null;
+    throw error;
   }
 };
 

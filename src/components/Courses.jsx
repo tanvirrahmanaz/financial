@@ -1,6 +1,7 @@
 // src/pages/CoursesPage.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState([]);
@@ -10,7 +11,7 @@ const CoursesPage = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/courses');
+        const response = await fetch(`${API}/api/courses`);
         if (!response.ok) {
           throw new Error('Failed to fetch courses');
         }
